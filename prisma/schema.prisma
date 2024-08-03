@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator db {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  uid       String?  @unique
+  fcm_token String?
+  name      String
+  no_telp   String
+  email     String   @unique
+  password  String
+  photo     String?
+  role Role @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  addresses Address[]
+  payments  Payment[]
+  cartItems     CartItem[]
+
+  @@map("users")
+}
+
+model Payment {
+  id         Int      @id @default(autoincrement())
+  accountNo  String
+  bankName   String
+  userId     Int
+  user User @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("payments")
+}
+
+model CartItem {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  user User @relation(fields: [userId], references: [id])
+  productId Int
+  product Product @relation(fields: [productId], references: [id])
+  qty        Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("cart_items")
+}
+
+
+model Address {
+  id        Int      @id @default(autoincrement())
+  lineOne String
+  lineTwo String?
+  city String
+  country String
+  pincode String
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("addresses")
+}
+
+model Product {
+  id Int @id @default(autoincrement())
+  name String
+  description String
+  price Decimal
+  tags String
+  image String
+  stock Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cartItems     CartItem[]
+  productImages ProductImage[]
+
+  @@map("products")
+}
+
+model ProductImage {
+  id Int @id @default(autoincrement())
+  productId Int
+  product Product @relation(fields: [productId], references: [id])
+  filename String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("productimages")
+}
